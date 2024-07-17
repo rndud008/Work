@@ -1,4 +1,4 @@
-package com.example.work.domain;
+package com.example.work.resttemplate.domain;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.example.work.domain;
+package com.example.work.resttemplate.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.PrimitiveIterator;
 
 @Data
 @AllArgsConstructor
@@ -105,4 +104,5 @@ public class Item {
     public void detailItems(List<DetailItem> item){
         this.detailItems = item;
     }
+
 }
