@@ -1,4 +1,4 @@
-// import { useState, useEffect } from "react";
+// import { useState, useEffect, useMemo } from "react";
 // import "./App.css";
 // import WeatherButton from "./component/WeatherButton";
 // import * as XLSX from "xlsx";
@@ -16,7 +16,7 @@
 //     const [ultraSrtFcst, setUltraSrtFcst] = useState([]);
 //     const [vilageFcst, setVilageFcst] = useState([]);
 //     const [area, setArea] = useState("");
-//     const [midWeather, setMidWeather] = useState([])
+//     const [midWeather, setMidWeather] = useState([]);
 //     const [tmn, setTmn] = useState([]);
 //     const [tmx, setTmx] = useState([]);
 //
@@ -37,7 +37,7 @@
 //     };
 //
 //     useEffect(() => {
-//         fetchExcelFile();
+//         fetchExcelFile()
 //     }, []);
 //
 //     let createDate = (date) => {
@@ -51,17 +51,13 @@
 //
 //     const srtNcst = async (item) => {
 //         let date = new Date();
-//         let hour = date.getMinutes() <= 40 ? date.getHours() - 1 : date.getHours();
-//         hour = hour <= 9 ? "0" + hour + "00" : hour + "00";
-//
-//         if (date.getMinutes() <= 40) date.setTime(date.getTime() - 60 * 60 * 1000);
+//         if(date.getHours() === 0 || date.getMinutes() <= 40) date.setTime(date.getTime() - 60 * 60 * 1000);
+//         let baseTime = date.getHours() <= 9 ? "0" + date.getHours() + "00" : date.getHours() + "00";
 //
 //         let baseDate = createDate(date);
 //
-//         let baseTime = hour;
 //         // 초단기 실황. (매 시 1시간마다 발표 -> 적용시간은 40분.)
 //         url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?numOfRows=10&pageNo=1&dataType=json&base_date=${baseDate}&base_time=${baseTime}&nx=${item.nx}&ny=${item.ny}&serviceKey=${apiKey}`;
-//         console.log(url);
 //
 //         let response = await fetch(url);
 //         let data = await response.json();
@@ -81,7 +77,6 @@
 //             RN1: itemList[2].obsrValue,
 //             T1H: itemList[3].obsrValue,
 //         };
-//         console.log(result);
 //
 //         return result;
 //         // 특정 값 만 추출해서 가져오기 ==> PTY : 강수형태, REH : 습도, RN1 : 1시간 강수량, T1H : 기온
@@ -90,16 +85,14 @@
 //     const srtFcst = async (item) => {
 //         // 초단기 예보 baseTime 잡기.
 //         let date = new Date();
-//         let hour = date.getMinutes() <= 45 ? date.getHours() - 1 : date.getHours();
-//         hour = hour <= 9 ? "0" + hour + "30" : hour + "30";
+//         if (date.getHours() === 0 || date.getMinutes() <= 45) date.setTime(date.getTime() - 60 * 60 * 1000);
 //
-//         if (date.getMinutes() <= 45) date.setTime(date.getTime() - 60 * 60 * 1000);
+//         let baseTime =date.getHours() <= 9 ? "0" + date.getHours() + "30" : date.getHours() + "30";
 //
 //         let baseDate = createDate(date);
-//         let baseTime = hour;
+//
 //         // 초단기 예보. (매 시 30분 발표 -> 적용시간은 45분.)
 //         url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?numOfRows=60&pageNo=1&dataType=json&base_date=${baseDate}&base_time=${baseTime}&nx=${item.nx}&ny=${item.ny}&serviceKey=${apiKey}`;
-//         console.log(url);
 //
 //         let response = await fetch(url);
 //         let data = await response.json();
@@ -121,7 +114,7 @@
 //
 //         const result = Object.keys(groupByFcstTime).map((fcstTime) => {
 //             return {
-//                 fcstTime: fcstTime === '0000' ? '2400' : fcstTime,
+//                 fcstTime: fcstTime === "0000" ? "2400" : fcstTime,
 //                 PTY: groupByFcstTime[fcstTime][0].fcstValue,
 //                 RN1: groupByFcstTime[fcstTime][1].fcstValue,
 //                 SKY: groupByFcstTime[fcstTime][2].fcstValue,
@@ -130,8 +123,6 @@
 //             };
 //         });
 //         result.sort((a, b) => parseInt(a.fcstTime) - parseInt(b.fcstTime));
-//
-//         console.log(result);
 //
 //         return result;
 //         // LGT = 낙뢰, PTY : 강수형태, RN1 : 1시간 강수량, SKY : 하늘상태, T1H : 기온, REH : 습도, UUU : 동서바람성분, VVV : 남북바람성분, VEC : 풍향, WSD : 풍속
@@ -149,47 +140,43 @@
 //                 date.setTime(date.getTime() - 60 * 60 * 1000 * (date.getHours() + 1));
 //                 baseTime = "2300";
 //             }
-//         } else if (date.getHours() < 5)
+//         } else if (date.getHours() <= 5)
 //             date.getHours() === 5 && date.getMinutes() > 10
 //                 ? (baseTime = "0500")
 //                 : (baseTime = "0200");
-//         else if (date.getHours() < 8)
+//         else if (date.getHours() <= 8)
 //             date.getHours() === 8 && date.getMinutes() > 10
 //                 ? (baseTime = "0800")
 //                 : (baseTime = "0500");
-//         else if (date.getHours() < 11)
+//         else if (date.getHours() <= 11)
 //             date.getHours() === 11 && date.getMinutes() > 10
 //                 ? (baseTime = "1100")
 //                 : (baseTime = "0800");
-//         else if (date.getHours() < 14)
+//         else if (date.getHours() <= 14)
 //             date.getHours() === 14 && date.getMinutes() > 10
 //                 ? (baseTime = "1400")
 //                 : (baseTime = "1100");
-//         else if (date.getHours() < 17)
+//         else if (date.getHours() <= 17)
 //             date.getHours() === 17 && date.getMinutes() > 10
 //                 ? (baseTime = "1700")
 //                 : (baseTime = "1400");
-//         else if (date.getHours() < 20)
+//         else if (date.getHours() <= 20)
 //             date.getHours() === 20 && date.getMinutes() > 10
 //                 ? (baseTime = "2000")
 //                 : (baseTime = "1700");
-//         else if (date.getHours() < 24)
+//         else if (date.getHours() <= 23)
 //             date.getHours() === 23 && date.getMinutes() > 10
 //                 ? (baseTime = "2300")
 //                 : (baseTime = "2000");
 //
 //         let baseDate = createDate(date);
-//         console.log(baseTime);
 //
 //         // 단기 예보(0200,0500,0800,1100,1400,1700,2000,2300 / 해당시간에 10분후  적용)
 //         url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?numOfRows=1000&pageNo=1&dataType=json&base_date=${baseDate}&base_time=${baseTime}&nx=${item.nx}&ny=${item.ny}&serviceKey=${apiKey}`;
+//         let response = await fetch(url);
 //         console.log(url);
 //
-//         let response = await fetch(url);
-//         console.log(response);
-//
 //         let data = await response.json();
-//         console.log(data)
 //
 //         let itemList = data.response.body.items.item;
 //         itemList = Object.values(itemList).filter((item) =>
@@ -197,7 +184,6 @@
 //                 (category) => item.category.includes(category)
 //             )
 //         );
-//         console.log(itemList);
 //
 //         const groupByFcstTime = itemList.reduce((acc, item) => {
 //             if (!acc[item.fcstDate]) {
@@ -209,7 +195,8 @@
 //             acc[item.fcstDate][item.fcstTime].push(item);
 //             return acc;
 //         }, {});
-//         console.log(groupByFcstTime,'??');
+//
+//         console.log(groupByFcstTime);
 //
 //         const result = Object.keys(groupByFcstTime).map((fcstDate) =>
 //             Object.keys(groupByFcstTime[fcstDate]).map((fcstTime) => {
@@ -223,38 +210,24 @@
 //                     PCP: groupByFcstTime[fcstDate][fcstTime][4].fcstValue,
 //                     REH: groupByFcstTime[fcstDate][fcstTime][5].fcstValue,
 //                     SNO: groupByFcstTime[fcstDate][fcstTime][6].fcstValue,
-//                     TMN:
-//                         fcstTime === "0600"
-//                             ? groupByFcstTime[fcstDate][fcstTime]?.[7].fcstValue
-//                             : null,
-//                     TMX:
-//                         fcstTime === "1500"
-//                             ? groupByFcstTime[fcstDate][fcstTime]?.[7].fcstValue
-//                             : null
+//                     TMN: groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === 'TMN' ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue : null,
+//                     TMX: groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === 'TMX' ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue : null,
 //                 };
 //             })
 //         );
-//
-//         console.log(groupByFcstTime[20240723]['0000'][0],'first');
 //
 //         result.forEach((innerArray) => {
 //             innerArray.sort((a, b) => parseInt(a.fcstTime) - parseInt(b.fcstTime));
 //         });
 //         // fcstTime 순서가 정렬되어 있지 않아서 sort로 정렬.
 //
-//         console.log(result);
-//
 //         return result;
 //
 //         // TMP = 1시간 기온, UUU = 풍속(동서성분), VVV = 풍속(남북성분), VEC = 풍향, WSD = 풍속, TMN = 일 최저기온, TMX = 일 최고기온
 //         // SKY = 하늘상태, PTY = 강수형태, POP = 강수확률, WAV = 파고, PCP = 1시간 강수량, REH = 습도, SNO = 1시간 신적설
-//
-//         // 당일 TMN 은 0200 시까지만 출력됨. -> 이것에대해 할것?
-//
-//         // 당일 TMX 은 1500 시까지만 출력됨. .
 //     };
 //
-//     const midweather = async(item) => {
+//     const midweather = async (item) => {
 //         // 중기 육상예보
 //         let date = new Date();
 //         let baseDate;
@@ -266,131 +239,124 @@
 //
 //         baseDate = createDate(date) + "" + baseTime;
 //         url = `http://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst?numOfRows=10&pageNo=1&dataType=json&regId=${item.athletics}&tmFc=${baseDate}&serviceKey=${apiKey}`;
-//         console.log(url);
-//
 //         let response = await fetch(url);
-//         // console.log(response);
 //
 //         let data = await response.json();
-//         // console.log(data);
 //
 //         let itemList = data.response.body.items.item;
-//         console.log(itemList);
 //
 //         const MidLandFcst = {
-//             4:{
-//
+//             4: {
 //                 rnSt4Am: itemList[0].rnSt4Am,
 //                 rnSt4Pm: itemList[0].rnSt4Pm,
 //                 wf4Am: itemList[0].wf4Am,
 //                 wf4Pm: itemList[0].wf4Pm,
 //             },
-//             5:{
-//
+//             5: {
 //                 rnSt5Am: itemList[0].rnSt5Am,
 //                 rnSt5Pm: itemList[0].rnSt5Pm,
 //                 wf5Am: itemList[0].wf5Am,
 //                 wf5Pm: itemList[0].wf5Pm,
 //             },
-//             6:{
-//
+//             6: {
 //                 rnSt6Am: itemList[0].rnSt6Am,
 //                 rnSt6Pm: itemList[0].rnSt6Pm,
 //                 wf6Am: itemList[0].wf6Am,
 //                 wf6Pm: itemList[0].wf6Pm,
 //             },
-//             7:{
+//             7: {
 //                 rnSt7Am: itemList[0].rnSt7Am,
 //                 rnSt7Pm: itemList[0].rnSt7Pm,
 //                 wf7Am: itemList[0].wf7Am,
 //                 wf7Pm: itemList[0].wf7Pm,
-//             }
-//
-//
+//             },
 //         };
 //
-//         console.log(MidLandFcst, "a1");
-//
-//         // const extraValue = Object.values(itemList).map(item => item ,keyExtra[key => item[key]]);
-//         // console.log(extraValue);
 //         //rnSt?AM = ?일 후 오전 강수확률, rnSt?PM = ?일 후 오후 강수확률, wf?Am = ?일 후 오전 날씨예보, wf?Pm = ?일 후 오후 날씨예보
 //
 //         // 중기 기온예보.
 //         url = `http://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa?numOfRows=10&pageNo=1&dataType=json&regId=${item.temperature}&tmFc=${baseDate}&serviceKey=${apiKey}`;
-//         console.log(url);
-//
 //         response = await fetch(url);
-//         // console.log(response);
 //
 //         data = await response.json();
-//         // console.log(data);
 //
 //         itemList = data.response.body.items.item;
-//         // console.log(itemList);
 //
-//         // console.log(itemList);
 //         const MidTa = {
-//             4:{
+//             4: {
 //                 taMax4: itemList[0].taMax4,
 //                 taMin4: itemList[0].taMin4,
 //             },
-//             5:{
+//             5: {
 //                 taMax5: itemList[0].taMax5,
 //                 taMin5: itemList[0].taMin5,
 //             },
-//             6:{
+//             6: {
 //                 taMax6: itemList[0].taMax6,
 //                 taMin6: itemList[0].taMin6,
 //             },
-//             7:{
+//             7: {
 //                 taMax7: itemList[0].taMax7,
 //                 taMin7: itemList[0].taMin7,
-//             }
+//             },
 //         };
-//         // console.log(MidTa, "a2");
 //         // taMax? = ?일후 최고기온, taMin? = ?일후 최저기온
 //
-//         let result = {...MidLandFcst};
+//         let result = { ...MidLandFcst };
 //
-//         // console.log(result,'result');
-//         for(let key in MidTa){
-//             if(result.hasOwnProperty(key)){
-//                 result[key] = [].concat(MidTa[key],result[key])
-//             }else{
-//                 result = MidTa[key]
+//         for (let key in MidTa) {
+//             if (result.hasOwnProperty(key)) {
+//                 result[key] = [].concat(MidTa[key], result[key]);
+//             } else {
+//                 result = MidTa[key];
 //             }
 //         }
 //
-//         console.log(result, 'key concat');
-//         return result
-//     }
+//         return result;
+//     };
 //
-//     const beforeTmn = async(item,tmnCheck) =>{
+//     const beforeTmn = async (item, tmnCheck) => {
 //         url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?numOfRows=60&pageNo=1&dataType=json&base_date=${tmnCheck}&base_time=0200&nx=${item.nx}&ny=${item.ny}&serviceKey=${apiKey}`;
-//
 //         let response = await fetch(url);
 //         let data = await response.json();
 //         let itemList = data.response.body.items.item;
 //
-//         return itemList.filter(item =>{return item.category === 'TMN'});
+//         return itemList.filter((item) => {
+//             return item.category === "TMN";
+//         });
+//     };
 //
-//     }
-//
-//     const beforeTmx = async(item,tmxCheck) =>{
+//     const beforeTmx = async (item, tmxCheck) => {
 //         url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?numOfRows=60&pageNo=1&dataType=json&base_date=${tmxCheck}&base_time=1100&nx=${item.nx}&ny=${item.ny}&serviceKey=${apiKey}`;
-//
 //         let response = await fetch(url);
 //         let data = await response.json();
 //         let itemList = data.response.body.items.item;
 //
-//         return itemList.filter(item => {return item.category === 'TMX'})
-//     }
+//         return itemList.filter((item) => {
+//             return item.category === "TMX";
+//         });
+//     };
 //
 //     const areaClick = async (item) => {
 //         setArea(item.area);
 //
 //         const srtncst = await srtNcst(item);
 //         setUltraSrtNcst(srtncst);
+//
+//         let date = new Date();
+//         let month =
+//             date.getMonth() >= 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
+//         let tmnAndTmxCheck = date.getFullYear() + "" + month + date.getDate();
+//
+//         if (date.getHours() > 5 ) {
+//             const tmnC = await beforeTmn(item, tmnAndTmxCheck);
+//             setTmn(tmnC);
+//         }
+//
+//         if (date.getHours() > 14) {
+//             const tmxC = await beforeTmx(item, tmnAndTmxCheck);
+//             setTmx(tmxC);
+//         }
 //
 //         const srtfcst = await srtFcst(item);
 //         setUltraSrtFcst(srtfcst);
@@ -401,27 +367,6 @@
 //         const midfcst = await midweather(item);
 //         setMidWeather(midfcst);
 //
-//         let date = new Date();
-//
-//         if(date.getHours() > 5){
-//             let month = date.getMonth() > 9 ? date.getMonth()+1 : '0'+(date.getMonth()+1)
-//             let tmnCheck = date.getFullYear()+''+month+ date.getDate();
-//
-//             const tmnC = await beforeTmn(item,tmnCheck)
-//             setTmn(tmnC);
-//
-//         }
-//
-//         if(date.getHours() > 14){
-//
-//             let month = date.getMonth() > 9 ? date.getMonth()+1 : '0'+(date.getMonth()+1)
-//             let tmxCheck = date.getFullYear()+''+month+ date.getDate();
-//
-//             console.log(9 > 9 ? 9+1 : '0'+(9+1));
-//
-//             const tmxC = await beforeTmx(item,tmxCheck);
-//             setTmx(tmxC)
-//         }
 //
 //     };
 //
