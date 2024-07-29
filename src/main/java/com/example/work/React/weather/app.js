@@ -37,7 +37,7 @@
 //     };
 //
 //     useEffect(() => {
-//         fetchExcelFile()
+//         fetchExcelFile();
 //     }, []);
 //
 //     let createDate = (date) => {
@@ -51,8 +51,12 @@
 //
 //     const srtNcst = async (item) => {
 //         let date = new Date();
-//         if(date.getHours() === 0 || date.getMinutes() <= 40) date.setTime(date.getTime() - 60 * 60 * 1000);
-//         let baseTime = date.getHours() <= 9 ? "0" + date.getHours() + "00" : date.getHours() + "00";
+//         if (date.getHours() === 0 || date.getMinutes() <= 40)
+//             date.setTime(date.getTime() - 60 * 60 * 1000);
+//         let baseTime =
+//             date.getHours() <= 9
+//                 ? "0" + date.getHours() + "00"
+//                 : date.getHours() + "00";
 //
 //         let baseDate = createDate(date);
 //
@@ -85,9 +89,13 @@
 //     const srtFcst = async (item) => {
 //         // 초단기 예보 baseTime 잡기.
 //         let date = new Date();
-//         if (date.getHours() === 0 || date.getMinutes() <= 45) date.setTime(date.getTime() - 60 * 60 * 1000);
+//         if (date.getHours() === 0 || date.getMinutes() <= 45)
+//             date.setTime(date.getTime() - 60 * 60 * 1000);
 //
-//         let baseTime =date.getHours() <= 9 ? "0" + date.getHours() + "30" : date.getHours() + "30";
+//         let baseTime =
+//             date.getHours() <= 9
+//                 ? "0" + date.getHours() + "30"
+//                 : date.getHours() + "30";
 //
 //         let baseDate = createDate(date);
 //
@@ -114,7 +122,7 @@
 //
 //         const result = Object.keys(groupByFcstTime).map((fcstTime) => {
 //             return {
-//                 fcstTime: fcstTime === "0000" ? "2400" : fcstTime,
+//                 fcstTime: fcstTime,
 //                 PTY: groupByFcstTime[fcstTime][0].fcstValue,
 //                 RN1: groupByFcstTime[fcstTime][1].fcstValue,
 //                 SKY: groupByFcstTime[fcstTime][2].fcstValue,
@@ -127,6 +135,58 @@
 //         return result;
 //         // LGT = 낙뢰, PTY : 강수형태, RN1 : 1시간 강수량, SKY : 하늘상태, T1H : 기온, REH : 습도, UUU : 동서바람성분, VVV : 남북바람성분, VEC : 풍향, WSD : 풍속
 //         // => PTY : 강수형태, RN1 : 1시간 강수량, SKY : 하늘상태, T1H : 기온, REH : 습도  추출해서 사용.
+//     };
+//
+//     const vilfcst2 = (itemList) => {
+//         itemList = Object.values(itemList).filter((item) =>
+//             ["TMN", "TMX", "TMP", "SKY", "PTY", "POP", "PCP", "REH", "SNO"].some(
+//                 (category) => item.category.includes(category)
+//             )
+//         );
+//
+//         const groupByFcstTime = itemList.reduce((acc, item) => {
+//             if (!acc[item.fcstDate]) {
+//                 acc[item.fcstDate] = {};
+//             }
+//             if (!acc[item.fcstDate][item.fcstTime]) {
+//                 acc[item.fcstDate][item.fcstTime] = [];
+//             }
+//             acc[item.fcstDate][item.fcstTime].push(item);
+//             return acc;
+//         }, {});
+//
+//         console.log(groupByFcstTime);
+//
+//         const result = Object.keys(groupByFcstTime).map((fcstDate) =>
+//             Object.keys(groupByFcstTime[fcstDate]).map((fcstTime) => {
+//                 return {
+//                     fcstDate: fcstDate,
+//                     fcstTime: fcstTime,
+//                     TMP: groupByFcstTime[fcstDate][fcstTime][0].fcstValue,
+//                     SKY: groupByFcstTime[fcstDate][fcstTime][1].fcstValue,
+//                     PTY: groupByFcstTime[fcstDate][fcstTime][2].fcstValue,
+//                     POP: groupByFcstTime[fcstDate][fcstTime][3].fcstValue,
+//                     PCP: groupByFcstTime[fcstDate][fcstTime][4].fcstValue,
+//                     REH: groupByFcstTime[fcstDate][fcstTime][5].fcstValue,
+//                     SNO: groupByFcstTime[fcstDate][fcstTime][6].fcstValue,
+//                     TMN:
+//                         groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === "TMN"
+//                             ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue
+//                             : null,
+//                     TMX:
+//                         groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === "TMX"
+//                             ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue
+//                             : null,
+//                 };
+//             })
+//         );
+//
+//         result.forEach((innerArray) => {
+//             innerArray.sort((a, b) => parseInt(a.fcstTime) - parseInt(b.fcstTime));
+//         });
+//         // fcstTime 순서가 정렬되어 있지 않아서 sort로 정렬.
+//
+//         return result;
 //     };
 //
 //     const vilFcst = async (item) => {
@@ -179,49 +239,8 @@
 //         let data = await response.json();
 //
 //         let itemList = data.response.body.items.item;
-//         itemList = Object.values(itemList).filter((item) =>
-//             ["TMN", "TMX", "TMP", "SKY", "PTY", "POP", "PCP", "REH", "SNO"].some(
-//                 (category) => item.category.includes(category)
-//             )
-//         );
 //
-//         const groupByFcstTime = itemList.reduce((acc, item) => {
-//             if (!acc[item.fcstDate]) {
-//                 acc[item.fcstDate] = {};
-//             }
-//             if (!acc[item.fcstDate][item.fcstTime]) {
-//                 acc[item.fcstDate][item.fcstTime] = [];
-//             }
-//             acc[item.fcstDate][item.fcstTime].push(item);
-//             return acc;
-//         }, {});
-//
-//         console.log(groupByFcstTime);
-//
-//         const result = Object.keys(groupByFcstTime).map((fcstDate) =>
-//             Object.keys(groupByFcstTime[fcstDate]).map((fcstTime) => {
-//                 return {
-//                     fcstDate: fcstDate,
-//                     fcstTime: fcstTime,
-//                     TMP: groupByFcstTime[fcstDate][fcstTime][0].fcstValue,
-//                     SKY: groupByFcstTime[fcstDate][fcstTime][1].fcstValue,
-//                     PTY: groupByFcstTime[fcstDate][fcstTime][2].fcstValue,
-//                     POP: groupByFcstTime[fcstDate][fcstTime][3].fcstValue,
-//                     PCP: groupByFcstTime[fcstDate][fcstTime][4].fcstValue,
-//                     REH: groupByFcstTime[fcstDate][fcstTime][5].fcstValue,
-//                     SNO: groupByFcstTime[fcstDate][fcstTime][6].fcstValue,
-//                     TMN: groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === 'TMN' ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue : null,
-//                     TMX: groupByFcstTime[fcstDate][fcstTime]?.[7]?.category === 'TMX' ? groupByFcstTime[fcstDate][fcstTime][7].fcstValue : null,
-//                 };
-//             })
-//         );
-//
-//         result.forEach((innerArray) => {
-//             innerArray.sort((a, b) => parseInt(a.fcstTime) - parseInt(b.fcstTime));
-//         });
-//         // fcstTime 순서가 정렬되어 있지 않아서 sort로 정렬.
-//
-//         return result;
+//         return vilfcst2(itemList);
 //
 //         // TMP = 1시간 기온, UUU = 풍속(동서성분), VVV = 풍속(남북성분), VEC = 풍향, WSD = 풍속, TMN = 일 최저기온, TMX = 일 최고기온
 //         // SKY = 하늘상태, PTY = 강수형태, POP = 강수확률, WAV = 파고, PCP = 1시간 강수량, REH = 습도, SNO = 1시간 신적설
@@ -246,29 +265,35 @@
 //         let itemList = data.response.body.items.item;
 //
 //         const MidLandFcst = {
+//             3: {
+//                 rnStAm: itemList[0].rnSt3Am,
+//                 rnStPm: itemList[0].rnSt3Pm,
+//                 wfAm: itemList[0].wf3Am,
+//                 wfPm: itemList[0].wf3Pm,
+//             },
 //             4: {
-//                 rnSt4Am: itemList[0].rnSt4Am,
-//                 rnSt4Pm: itemList[0].rnSt4Pm,
-//                 wf4Am: itemList[0].wf4Am,
-//                 wf4Pm: itemList[0].wf4Pm,
+//                 rnStAm: itemList[0].rnSt4Am,
+//                 rnStPm: itemList[0].rnSt4Pm,
+//                 wfAm: itemList[0].wf4Am,
+//                 wfPm: itemList[0].wf4Pm,
 //             },
 //             5: {
-//                 rnSt5Am: itemList[0].rnSt5Am,
-//                 rnSt5Pm: itemList[0].rnSt5Pm,
-//                 wf5Am: itemList[0].wf5Am,
-//                 wf5Pm: itemList[0].wf5Pm,
+//                 rnStAm: itemList[0].rnSt5Am,
+//                 rnStPm: itemList[0].rnSt5Pm,
+//                 wfAm: itemList[0].wf5Am,
+//                 wfPm: itemList[0].wf5Pm,
 //             },
 //             6: {
-//                 rnSt6Am: itemList[0].rnSt6Am,
-//                 rnSt6Pm: itemList[0].rnSt6Pm,
-//                 wf6Am: itemList[0].wf6Am,
-//                 wf6Pm: itemList[0].wf6Pm,
+//                 rnStAm: itemList[0].rnSt6Am,
+//                 rnStPm: itemList[0].rnSt6Pm,
+//                 wfAm: itemList[0].wf6Am,
+//                 wfPm: itemList[0].wf6Pm,
 //             },
 //             7: {
-//                 rnSt7Am: itemList[0].rnSt7Am,
-//                 rnSt7Pm: itemList[0].rnSt7Pm,
-//                 wf7Am: itemList[0].wf7Am,
-//                 wf7Pm: itemList[0].wf7Pm,
+//                 rnStAm: itemList[0].rnSt7Am,
+//                 rnStPm: itemList[0].rnSt7Pm,
+//                 wfAm: itemList[0].wf7Am,
+//                 wfPm: itemList[0].wf7Pm,
 //             },
 //         };
 //
@@ -283,21 +308,25 @@
 //         itemList = data.response.body.items.item;
 //
 //         const MidTa = {
+//             3: {
+//                 taMax: itemList[0].taMax3,
+//                 taMin: itemList[0].taMin3,
+//             },
 //             4: {
-//                 taMax4: itemList[0].taMax4,
-//                 taMin4: itemList[0].taMin4,
+//                 taMax: itemList[0].taMax4,
+//                 taMin: itemList[0].taMin4,
 //             },
 //             5: {
-//                 taMax5: itemList[0].taMax5,
-//                 taMin5: itemList[0].taMin5,
+//                 taMax: itemList[0].taMax5,
+//                 taMin: itemList[0].taMin5,
 //             },
 //             6: {
-//                 taMax6: itemList[0].taMax6,
-//                 taMin6: itemList[0].taMin6,
+//                 taMax: itemList[0].taMax6,
+//                 taMin: itemList[0].taMin6,
 //             },
 //             7: {
-//                 taMax7: itemList[0].taMax7,
-//                 taMin7: itemList[0].taMin7,
+//                 taMax: itemList[0].taMax7,
+//                 taMin: itemList[0].taMin7,
 //             },
 //         };
 //         // taMax? = ?일후 최고기온, taMin? = ?일후 최저기온
@@ -306,7 +335,7 @@
 //
 //         for (let key in MidTa) {
 //             if (result.hasOwnProperty(key)) {
-//                 result[key] = [].concat(MidTa[key], result[key]);
+//                 result[key] = { ...MidTa[key], ...result[key] };
 //             } else {
 //                 result = MidTa[key];
 //             }
@@ -321,9 +350,26 @@
 //         let data = await response.json();
 //         let itemList = data.response.body.items.item;
 //
-//         return itemList.filter((item) => {
-//             return item.category === "TMN";
-//         });
+//         console.log(itemList, "beforeTmn");
+//
+//         console.log(
+//             itemList.filter((item) => item.fcstTime === "0600"),
+//             "beforeTmn2"
+//         );
+//
+//         console.log(
+//             vilfcst2(itemList.filter((item) => item.fcstTime === "0600")),
+//             "beforeTmn3"
+//         );
+//         console.log(
+//             vilfcst2(itemList.filter((item) => item.fcstTime === "0600")).flatMap(
+//                 (item) => item
+//             ),
+//             "beforeTmn4"
+//         );
+//         return vilfcst2(
+//             itemList.filter((item) => item.fcstTime === "0600")
+//         ).flatMap((item) => item);
 //     };
 //
 //     const beforeTmx = async (item, tmxCheck) => {
@@ -332,9 +378,14 @@
 //         let data = await response.json();
 //         let itemList = data.response.body.items.item;
 //
-//         return itemList.filter((item) => {
-//             return item.category === "TMX";
-//         });
+//         console.log(
+//             itemList.filter((item) => item.fcstTime === "1500"),
+//             "beforeTmx2"
+//         );
+//
+//         return vilfcst2(
+//             itemList.filter((item) => item.fcstTime === "1500")
+//         ).flatMap((item) => item);
 //     };
 //
 //     const areaClick = async (item) => {
@@ -348,12 +399,12 @@
 //             date.getMonth() >= 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
 //         let tmnAndTmxCheck = date.getFullYear() + "" + month + date.getDate();
 //
-//         if (date.getHours() > 5 ) {
+//         if (date.getHours() >= 5) {
 //             const tmnC = await beforeTmn(item, tmnAndTmxCheck);
 //             setTmn(tmnC);
 //         }
 //
-//         if (date.getHours() > 14) {
+//         if (date.getHours() >= 14) {
 //             const tmxC = await beforeTmx(item, tmnAndTmxCheck);
 //             setTmx(tmxC);
 //         }
@@ -366,12 +417,13 @@
 //
 //         const midfcst = await midweather(item);
 //         setMidWeather(midfcst);
-//
-//
 //     };
 //
 //     return (
 //         <>
+//             <div className="container">
+//                 <WeatherButton buttonList={data} areaClick={areaClick} />
+//             </div>
 //             <div className="container">
 //                 <WeatherInfo
 //                     ulNcst={ultraSrtNcst}
@@ -382,9 +434,6 @@
 //                     tmn={tmn}
 //                     tmx={tmx}
 //                 />
-//             </div>
-//             <div className="container">
-//                 <WeatherButton buttonList={data} areaClick={areaClick} />
 //             </div>
 //         </>
 //     );

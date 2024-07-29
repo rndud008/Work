@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class RestTemplateTest {
 
-    private static String apikey = "yX2naCE2GDeqRnAzSeOMSTLZuJ024sspBXv2a0bLRMRUj6s%2FQs6yX%2Fq1H4ELcAkS%2FkoSiCTmo%2BxvNv2SM1Gn0Q%3D%3D";
+    private static String apikey = "";
     // 디코딩된 apiKey 가 아니라 인코딩된 apiKey를 사용해야함
     private static String BASE_URL = "https://apis.data.go.kr/B551011/KorService1/areaBasedList1?" +
             "numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json&listYN=Y&arrange=A&"

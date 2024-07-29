@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="form-group mt-3">
+    <label for="email">email</label>
+    <input type="text" class="form-control" id="emailCheck" name="emailCheck" placeholder="email" th:value="${emailCheck}" >
+    <input type="hidden" class="form-control" id="email" name="email" placeholder="email" th:value="${email}" >
+    <input type="text" class="form-control" style="display: none" id="emailAuthValue" name="emailAuthValue" placeholder="emailAuthValue" th:value="${emailAuthValue}" >
+    <button type="button" id="authSend" onclick="emailValue()">인증</button>
+    <button type="button" style="display: none" id="emailRe" onclick="emailReWrite()">재입력</button>
+    <button type="button" style="display: none" id="authCheck" onclick="authValueSend()">인증하기</button>
+    <p id="timer-display"></p>
+</div>
+
+
+<script>
+    const emailInput = document.getElementById('emailCheck')
+    const emailAuthValue = document.getElementById('emailAuthValue')
+    const buttonAuthSend = document.getElementById('authSend')
+    const buttonEmailRe = document.getElementById('emailRe')
+    const buttonAuthCheck = document.getElementById('authCheck')
+    const display = document.getElementById('timer-display');
+    const emailSendValue = document.getElementById('email');
+
+    let intervalid;
+
+    async function emailValue (){
+        const email = emailInput.value;
+        console.log(email)
+        const url = 'http://localhost:8090/email/token'
+        try {
+            const response = await fetch(url,{
+                method: 'post',
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                body: JSON.stringify({email}),
+            });
+
+            if(!response.ok){
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            const data = await response.json();
+            console.log(data)
+
+            if(data === 0){
+                window.alert('이미 존재하는 email 입니다. , 다른 email 을 입력해주세요.');
+                return;
+            }
+
+            emailInput.disabled = true;
+            buttonAuthSend.style.display = 'none';
+            buttonEmailRe.style.display = 'block';
+            buttonAuthCheck.style.display = 'block';
+            emailAuthValue.style.display = 'block';
+
+            console.log(emailSendValue.value)
+
+            startThreeMinuteTimer();
+            window.alert('인증번호가 발송되었습니다.');
+        }catch (e) {
+            console.error('There was a problem with the fetch operation: ', e);
+        }
+    }
+
+    async function emailReWrite (){
+        reset();
+
+        if(intervalid){
+            clearInterval(intervalid);
+            intervalid = null;
+        }
+
+        const email = emailInput.value;
+        const url = 'http://localhost:8090/email/token/delete'
+
+        try {
+            const response = await fetch(url,{
+                method: 'delete',
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                body: JSON.stringify({email}),
+            });
+
+            if(!response.ok){
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            const data = await  response.json();
+            console.log(data)
+            console.log('token 삭제 완료.')
+
+        }catch (e) {
+            console.error('There was a problem with the fetch operation: ', e);
+        }
+
+    }
+
+    async function authValueSend(){
+        const token = emailAuthValue.value;
+        const email = emailInput.value;
+        console.log(email,'email')
+
+        const url = 'http://localhost:8090/email/token/check'
+
+        try {
+            const response = await fetch(url,{
+                method: 'post',
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                body: JSON.stringify({email,token}),
+            });
+
+            if(!response.ok){
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            const data = await response.json();
+            console.log(data)
+            buttonAuthSend.style.display = 'none';
+            buttonEmailRe.style.display = 'block';
+            buttonAuthCheck.style.display = 'none';
+            emailAuthValue.style.display = 'none';
+            emailSendValue.value = email
+
+            console.log(emailSendValue.value,'인증완료')
+
+            window.alert('인증 완료');
+
+
+            if(intervalid){
+                clearInterval(intervalid);
+                intervalid = null;
+            }
+
+            display.textContent = `인증완료`
+        }catch (e) {
+            console.error('There was a problem with the fetch operation: ', e);
+        }
+
+    }
+
+    function startThreeMinuteTimer(time = 180){
+        let timeLeft = parseInt(time);
+        display.style.display = 'block'
+
+        intervalid = setInterval(() =>{
+            display.textContent = `남은 시간 : ${timeLeft}초`;
+
+            if(timeLeft <= 0){
+                clearInterval(intervalid)
+                reset();
+            }else {
+                timeLeft--;
+            }
+
+        }, 1000);
+    }
+
+    function reset(){
+        display.style.display = 'none';
+        emailInput.disabled = false;
+        buttonAuthSend.style.display = 'block';
+        buttonEmailRe.style.display = 'none';
+        buttonAuthCheck.style.display = 'none';
+        emailAuthValue.style.display = 'none';
+    }
+
+</script>
+
+</body>
+</html>
